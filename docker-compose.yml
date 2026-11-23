@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:18
+    container_name: cafeops-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # Postgres 18+ images expect the mount at /var/lib/postgresql (not .../data).
+    volumes:
+      - cafeops_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cafeops -d cafeops"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  cafeops_pgdata:
