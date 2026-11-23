@@ -43,7 +43,39 @@ public class CafeOrder {
         return tableId;
     }
 
+    public Long getShiftId() {
+        return shiftId;
+    }
+
     public OrderStatus getStatus() {
         return status;
+    }
+
+    public Instant getOpenedAt() {
+        return openedAt;
+    }
+
+    public Instant getClosedAt() {
+        return closedAt;
+    }
+
+    public void setTableId(Long tableId) {
+        this.tableId = tableId;
+    }
+
+    public void setShiftId(Long shiftId) {
+        this.shiftId = shiftId;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public void setOpenedAt(Instant openedAt) {
+        this.openedAt = openedAt;
+    }
+
+    public void setClosedAt(Instant closedAt) {
+        this.closedAt = closedAt;
     }
 }
