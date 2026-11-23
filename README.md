@@ -24,7 +24,7 @@ Folders (as I add them):
 ## Progress
 
 - [x] README and docs sketch  
-- [ ] Postgres in Docker  
+- [x] Postgres in Docker  
 - [ ] Spring skeleton  
 - [ ] DB schema + demo data  
 - [ ] Auth (JWT) + roles  
