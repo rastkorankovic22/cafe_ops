@@ -9,7 +9,7 @@ export const routes: Routes = [
   },
   {
     path: 'waiter',
-    loadComponent: () => import('./features/waiter/waiter.component').then((m) => m.WaiterComponent),
+    loadChildren: () => import('./features/waiter/waiter.routes').then((m) => m.waiterRoutes),
     canActivate: [authGuard, roleGuard],
     data: { role: 'WAITER' },
   },
