@@ -7,25 +7,13 @@ import { AuthService } from '../../core/auth/auth.service';
   standalone: true,
   imports: [RouterOutlet, RouterLink],
   template: `
-    <header class="bar">
-      <a routerLink="/waiter">Tables</a>
-      <span>{{ user?.fullName }}</span>
-      <button type="button" (click)="logout()">Logout</button>
+    <header class="app-header">
+      <a routerLink="/waiter" class="brand">Waiter</a>
+      <span class="user">{{ user?.fullName }}</span>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="logout()">Logout</button>
     </header>
     <router-outlet />
   `,
-  styles: [
-    `
-      .bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid #ddd;
-      }
-    `,
-  ],
 })
 export class WaiterShellComponent {
   private auth = inject(AuthService);

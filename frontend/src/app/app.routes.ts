@@ -15,7 +15,7 @@ export const routes: Routes = [
   },
   {
     path: 'owner',
-    loadComponent: () => import('./features/owner/owner.component').then((m) => m.OwnerComponent),
+    loadChildren: () => import('./features/owner/owner.routes').then((m) => m.ownerRoutes),
     canActivate: [authGuard, roleGuard],
     data: { role: 'OWNER' },
   },

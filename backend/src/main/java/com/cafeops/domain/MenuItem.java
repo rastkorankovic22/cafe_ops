@@ -29,6 +29,9 @@ public class MenuItem {
     @Column(nullable = false)
     private boolean active;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     public Long getId() {
         return id;
     }
@@ -63,5 +66,13 @@ public class MenuItem {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

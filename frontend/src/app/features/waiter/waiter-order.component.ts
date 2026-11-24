@@ -1,10 +1,10 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MenuApiService } from '../../core/api/menu-api.service';
 import { OrderApiService } from '../../core/api/order-api.service';
 import { MenuCategoryDto, MenuItemDto, OrderDto } from '../../core/api/api.models';
-import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-waiter-order',
@@ -12,82 +12,80 @@ import { FormsModule } from '@angular/forms';
   imports: [RouterLink, FormsModule, DecimalPipe],
   template: `
     <main class="page">
-      <a routerLink="/waiter">← Back</a>
+      <a class="back-link" routerLink="/waiter">← Floor plan</a>
       <h1>Table {{ tableId }}</h1>
 
       @if (error) {
-        <p class="warn">{{ error }}</p>
+        <p class="alert-error">{{ error }}</p>
       }
 
       @if (!order) {
-        <button type="button" (click)="startOrder()">Start order</button>
-      } @else {
-        <ul class="lines">
-          @for (line of order.lines; track line.id) {
-            <li>
-              <span>{{ line.menuItemName }} × {{ line.quantity }}</span>
-              <span>{{ line.unitPrice * line.quantity | number: '1.2-2' }}</span>
-              <button type="button" (click)="changeQty(line.id, line.quantity + 1)">+</button>
-              <button type="button" (click)="removeLine(line.id)" [disabled]="order.lines.length === 1">×</button>
-            </li>
-          }
-        </ul>
-
-        <div class="add">
-          <select [(ngModel)]="selectedItemId">
-            <option [ngValue]="null">Select drink</option>
-            @for (item of menuItems; track item.id) {
-              <option [ngValue]="item.id">{{ item.name }} ({{ item.price }})</option>
-            }
-          </select>
-          <input type="number" min="1" [(ngModel)]="qty" />
-          <button type="button" (click)="addLine()" [disabled]="!selectedItemId">Add</button>
+        <div class="card">
+          <p class="meta">No open order on this table.</p>
+          <button type="button" class="btn btn-primary" (click)="startOrder()">Start order</button>
         </div>
+      } @else {
+        <div class="card">
+          <ul class="order-lines">
+            @for (line of order.lines; track line.id) {
+              <li>
+                <span>{{ line.menuItemName }} × {{ line.quantity }}</span>
+                <span class="price">{{ line.unitPrice * line.quantity | number: '1.2-2' }}</span>
+                <button type="button" class="btn btn-ghost btn-sm" (click)="removeLine(line.id)">Remove</button>
+              </li>
+            }
+          </ul>
+          <p class="total">Total: {{ orderTotal | number: '1.2-2' }}</p>
 
-        <p class="total">Total: {{ orderTotal | number: '1.2-2' }}</p>
-        <button type="button" class="close" (click)="closeOrder()">Close order</button>
+          <div class="category-chips">
+            @for (cat of categories; track cat.id) {
+              <button
+                type="button"
+                [class.active]="activeCategoryId === cat.id"
+                (click)="activeCategoryId = cat.id; pickedItem = null"
+              >
+                {{ cat.name }}
+              </button>
+            }
+          </div>
+
+          @if (activeCategory) {
+            <div class="drink-grid">
+              @for (item of activeCategory.items; track item.id) {
+                <button
+                  type="button"
+                  class="drink-card"
+                  [class.selected]="pickedItem?.id === item.id"
+                  (click)="pickItem(item)"
+                >
+                  <img [src]="itemImage(item)" [alt]="item.name" />
+                  <span class="name">{{ item.name }}</span>
+                  <span class="price">{{ item.price | number: '1.2-2' }}</span>
+                </button>
+              }
+            </div>
+          }
+
+          @if (pickedItem) {
+            <div class="qty-panel">
+              <p>
+                <strong>{{ pickedItem.name }}</strong>
+              </p>
+              <div class="row">
+                <label class="field">
+                  Quantity
+                  <input type="number" min="1" [(ngModel)]="qty" />
+                </label>
+                <button type="button" class="btn btn-primary" (click)="addLine()">Add to order</button>
+              </div>
+            </div>
+          }
+
+          <button type="button" class="btn btn-primary" (click)="closeOrder()">Close order</button>
+        </div>
       }
     </main>
   `,
-  styles: [
-    `
-      .page {
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-      .warn {
-        color: #b00020;
-      }
-      .lines {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-      }
-      .lines li {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #eee;
-      }
-      .add {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-      }
-      select,
-      input {
-        padding: 0.35rem;
-      }
-      .close {
-        padding: 0.75rem;
-      }
-    `,
-  ],
 })
 export class WaiterOrderComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -96,8 +94,9 @@ export class WaiterOrderComponent implements OnInit {
 
   tableId = 0;
   order: OrderDto | null = null;
-  menuItems: MenuItemDto[] = [];
-  selectedItemId: number | null = null;
+  categories: MenuCategoryDto[] = [];
+  activeCategoryId: number | null = null;
+  pickedItem: MenuItemDto | null = null;
   qty = 1;
   error = '';
 
@@ -105,10 +104,21 @@ export class WaiterOrderComponent implements OnInit {
     this.tableId = Number(this.route.snapshot.paramMap.get('tableId'));
     this.menu.list().subscribe({
       next: (cats) => {
-        this.menuItems = cats.flatMap((c: MenuCategoryDto) => c.items);
+        this.categories = cats;
+        if (cats.length) {
+          this.activeCategoryId = cats[0].id;
+        }
       },
     });
     this.loadOrder();
+  }
+
+  get activeCategory(): MenuCategoryDto | undefined {
+    return this.categories.find((c) => c.id === this.activeCategoryId);
+  }
+
+  itemImage(item: MenuItemDto): string {
+    return item.imageUrl || '/drinks/default.svg';
   }
 
   get orderTotal(): number {
@@ -116,6 +126,11 @@ export class WaiterOrderComponent implements OnInit {
       return 0;
     }
     return this.order.lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+  }
+
+  pickItem(item: MenuItemDto) {
+    this.pickedItem = item;
+    this.qty = 1;
   }
 
   startOrder() {
@@ -135,24 +150,16 @@ export class WaiterOrderComponent implements OnInit {
   }
 
   addLine() {
-    if (!this.order || !this.selectedItemId) {
+    if (!this.order || !this.pickedItem) {
       return;
     }
-    this.orders.addLine(this.order.id, this.selectedItemId, this.qty).subscribe({
+    this.orders.addLine(this.order.id, this.pickedItem.id, this.qty).subscribe({
       next: (o) => {
         this.order = o;
+        this.pickedItem = null;
         this.qty = 1;
       },
       error: (e) => (this.error = this.msg(e)),
-    });
-  }
-
-  changeQty(lineId: number, quantity: number) {
-    if (!this.order) {
-      return;
-    }
-    this.orders.updateLine(this.order.id, lineId, quantity).subscribe({
-      next: (o) => (this.order = o),
     });
   }
 

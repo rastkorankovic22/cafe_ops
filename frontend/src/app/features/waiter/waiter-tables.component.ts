@@ -10,66 +10,34 @@ import { TableDto } from '../../core/api/api.models';
   imports: [RouterLink],
   template: `
     <main class="page">
+      <h1>Tables</h1>
       @if (shiftError) {
-        <p class="warn">No open shift — ask the owner to start one.</p>
+        <p class="alert-warn">No open shift — ask the owner to start one.</p>
       } @else if (shiftName) {
-        <p class="meta">Shift: {{ shiftName }}</p>
+        <p class="meta">On shift: <strong>{{ shiftName }}</strong></p>
       }
 
       @if (tables.length === 0) {
-        <p>No tables.</p>
+        <p class="meta">No tables.</p>
       } @else {
-        <ul class="grid">
+        <div class="floor-map wide">
           @for (t of tables; track t.id) {
-            <li>
-              <a [routerLink]="['/waiter', 'table', t.id]" [class.occupied]="t.occupied">
-                {{ t.label }}
-                <small>{{ t.occupied ? 'Busy' : 'Free' }}</small>
-              </a>
-            </li>
+            <a
+              class="floor-dot link-dot"
+              [class.occupied]="t.occupied"
+              [style.left.px]="t.posX"
+              [style.top.px]="t.posY"
+              [routerLink]="['/waiter', 'table', t.id]"
+            >
+              {{ t.label }}
+              <small>{{ t.occupied ? 'Busy' : 'Free' }}</small>
+            </a>
           }
-        </ul>
+        </div>
+        <p class="meta">Layout matches owner floor plan. Tap a table to open the order.</p>
       }
     </main>
   `,
-  styles: [
-    `
-      .page {
-        padding: 1rem;
-      }
-      .warn {
-        color: #b00020;
-      }
-      .meta {
-        margin-bottom: 1rem;
-      }
-      .grid {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 0.75rem;
-      }
-      a {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 1rem;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        text-decoration: none;
-        color: inherit;
-      }
-      a.occupied {
-        border-color: #f59e0b;
-        background: #fff8eb;
-      }
-      small {
-        color: #555;
-      }
-    `,
-  ],
 })
 export class WaiterTablesComponent implements OnInit {
   private tablesApi = inject(TableApiService);

@@ -8,51 +8,29 @@ import { AuthService } from '../../core/auth/auth.service';
   standalone: true,
   imports: [ReactiveFormsModule],
   template: `
-    <main class="login">
-      <h1>Cafe Ops</h1>
-      <form [formGroup]="form" (ngSubmit)="submit()">
-        <label>
-          Email
-          <input type="email" formControlName="email" />
-        </label>
-        <label>
-          Password
-          <input type="password" formControlName="password" />
-        </label>
-        @if (error) {
-          <p class="error">{{ error }}</p>
-        }
-        <button type="submit" [disabled]="form.invalid || loading">Sign in</button>
-      </form>
+    <main class="login-hero">
+      <p class="logo">Cafe Ops</p>
+      <p class="tagline">Lumen Cafe — shift &amp; floor</p>
+      <div class="card login-card">
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <label class="field">
+            Email
+            <input type="email" formControlName="email" autocomplete="username" />
+          </label>
+          <label class="field">
+            Password
+            <input type="password" formControlName="password" autocomplete="current-password" />
+          </label>
+          @if (error) {
+            <p class="alert-error">{{ error }}</p>
+          }
+          <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
+            {{ loading ? 'Signing in…' : 'Sign in' }}
+          </button>
+        </form>
+      </div>
     </main>
   `,
-  styles: [
-    `
-      .login {
-        max-width: 360px;
-        margin: 4rem auto;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-      form {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-      }
-      label {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-      input {
-        padding: 0.5rem;
-      }
-      .error {
-        color: #b00020;
-      }
-    `,
-  ],
 })
 export class LoginComponent {
   private fb = inject(FormBuilder);

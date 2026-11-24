@@ -13,6 +13,7 @@ export interface MenuItemDto {
   name: string;
   price: number;
   active: boolean;
+  imageUrl?: string | null;
 }
 
 export interface MenuCategoryDto {

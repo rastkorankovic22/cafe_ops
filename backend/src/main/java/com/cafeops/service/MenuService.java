@@ -138,7 +138,8 @@ public class MenuService {
     }
 
     private MenuItemResponse toItemResponse(MenuItem item) {
-        return new MenuItemResponse(item.getId(), item.getCategoryId(), item.getName(), item.getPrice(), item.isActive());
+        return new MenuItemResponse(
+                item.getId(), item.getCategoryId(), item.getName(), item.getPrice(), item.isActive(), item.getImageUrl());
     }
 
     private AppUser requireUser(Long userId) {
